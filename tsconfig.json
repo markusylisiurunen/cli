@@ -15,5 +15,6 @@
     "strict": true,
     "target": "es6",
     "plugins": [{ "transform": "typescript-transform-paths" }]
-  }
+  },
+  "exclude": ["examples"]
 }

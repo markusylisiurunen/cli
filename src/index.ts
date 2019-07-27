@@ -2,6 +2,8 @@
  * @overview Entrypoint for the application.
  */
 
-import greetings from "@/util/greeting";
+import flags from "@/util/flags";
 
-console.log(greetings.generateSimpleGreeting("Namey McNameface"));
+export default {
+  flags,
+};
