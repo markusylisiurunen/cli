@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "outDir": "build",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6",
+    "plugins": [{ "transform": "typescript-transform-paths" }]
+  }
+}
