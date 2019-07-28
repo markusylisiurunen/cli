@@ -50,6 +50,13 @@ export default abstract class FlagTypeBase<ReturnType, Options extends IFlagType
   }
 
   /**
+   * Error for when value is invalid.
+   */
+  protected errorInvalid(): Error {
+    return new Error(`Flag (--${this.longName}) value is invalid.`);
+  }
+
+  /**
    * Parse the raw flag value.
    * @param rawFlagValue The string value of the provided flag if any.
    */

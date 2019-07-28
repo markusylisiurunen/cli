@@ -3,6 +3,7 @@
  */
 
 import FlagTypeString from "@/flags/types/string";
+import FlagTypeEnum from "@/flags/types/enum";
 
 type ParsedFlagType = string | undefined;
 
@@ -13,7 +14,7 @@ type ParsedFlagType = string | undefined;
  */
 export default function parse(
   flagMap: { [key: string]: string },
-  flagDefinitions: FlagTypeString[],
+  flagDefinitions: (FlagTypeString | FlagTypeEnum)[],
 ): { [key: string]: ParsedFlagType } {
   const parsedFlagValues: { [key: string]: ParsedFlagType } = {};
 
