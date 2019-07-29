@@ -8,6 +8,7 @@
     "moduleResolution": "node",
     "noImplicitAny": true,
     "outDir": "build",
+    "lib": ["esnext.array"],
     "paths": {
       "@/*": ["src/*"]
     },
@@ -15,6 +16,5 @@
     "strict": true,
     "target": "es6",
     "plugins": [{ "transform": "typescript-transform-paths" }]
-  },
-  "exclude": ["examples"]
+  }
 }
