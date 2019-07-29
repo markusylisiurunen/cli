@@ -2,8 +2,7 @@
  * @overview Entrypoint for the application.
  */
 
-import flags from "@/util/flags";
+import cli from "@/cli";
+import Command from "@/command";
 
-export default {
-  flags,
-};
+export default { ...cli, Command };
