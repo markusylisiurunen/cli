@@ -39,6 +39,7 @@
     "typescript-transform-paths": "^1.1.6"
   },
   "dependencies": {
+    "inquirer": "^6.5.0",
     "minimist": "^1.2.0"
   }
 }

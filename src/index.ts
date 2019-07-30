@@ -3,6 +3,7 @@
  */
 
 import cli from "@/cli";
+import ui from "@/ui";
 import Command from "@/command";
 
-export default { ...cli, Command };
+export default { ...cli, ui, Command };

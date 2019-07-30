@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 
-const cli: any = null;
+import cli from "../../src";
 
 class DeployCommand extends cli.Command {
   /**
@@ -15,11 +15,15 @@ class DeployCommand extends cli.Command {
    * for the flags.
    */
 
+  public name = "deploy";
+
+  public description = "Deploy a service to a Kubernetes cluster.";
+
   // prettier-ignore
-  public static flagsConfig = [
-    cli.flag.enum("service", "s", "Service to deploy.", { choices: ["frontend", "backend"] }),
-    cli.flag.enum("environment", "e", "Environment to deploy to.", { choices: ["dev", "staging", "prod"] }),
-    cli.flag.string("token", "t", "Authentication token for Kubernetes.", { optional: true }),
+  public flagDefinitions = [
+    cli.flags.enum("service", "s", "Service to deploy.", { choices: ["frontend", "backend"] }),
+    cli.flags.enum("environment", "e", "Environment to deploy to.", { choices: ["dev", "staging", "prod"] }),
+    cli.flags.string("token", "t", "Authentication token for Kubernetes.", { optional: true }),
   ];
 
   /**
@@ -39,18 +43,50 @@ class DeployCommand extends cli.Command {
    * Any command can also be run statically which requires the flags to be set beforehand. Below is
    * an example of doing just that.
    */
-  public async runStatic(flags) {
+  public async runStatic() {
     // You can ask for additional information here if needed.
-
     await this.main(flags);
   }
 
   private async main(flags) {
-    // Do whatever you wish with the flags.
-    console.log(flags);
+    // Indicator for a single task
+    const uiTask1 = ui.task(
+      { text: "Build a Docker container for front-end service." },
+      { status: "running" },
+    );
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    } catch (error) {
+      uiTask1.updateState({ status: "failed" }).commit();
+      return;
+    }
+
+    uiTask1.updateState({ status: "completed" }).commit();
+
+    // Run multiple tasks in parallel
+    const uiTask2 = ui.task({ text: "Deploy to staging environment." }, { status: "running" });
+    const uiTask3 = ui.task({ text: "Deploy to production environment." }, { status: "running" });
+
+    const uiTaskList = ui.list([uiTask2, uiTask3]);
+
+    try {
+      const task2 = new Promise((resolve) => setTimeout(resolve, 3500));
+      const task3 = new Promise((resolve) => setTimeout(resolve, 5000));
+
+      uiTask2.listenForPromise(task2);
+      uiTask3.listenForPromise(task3);
+
+      await Promise.all([task2, task3]);
+    } catch (error) {
+      uiTaskList.commit();
+      return;
+    }
+
+    uiTaskList.commit();
   }
 }
 
-cli.register("", DeployCommand);
+cli.registerCommand(new DeployCommand());
 
-cli.run(process.argv);
+cli.run();
