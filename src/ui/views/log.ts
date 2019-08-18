@@ -34,7 +34,7 @@ class UIViewLog extends UIViewBase<IUIViewLogState> {
    * @param options Options for the view.
    */
   public constructor(
-    parent: UIViewBase,
+    parent: UIViewBase | null,
     props: IUIViewLogProps,
     _options: Partial<IUIViewLogOptions>,
   ) {
