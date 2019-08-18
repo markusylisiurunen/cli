@@ -4,7 +4,7 @@
 
 import { TFlagDefinition, IFlagsParsed } from "@/types/flags";
 
-import printFlagsHelp from "@/flags/help";
+import helpFlags from "@/flags/help";
 
 export default abstract class Command {
   // Name of this command
@@ -34,7 +34,8 @@ export default abstract class Command {
    * Print help for this command.
    */
   public printHelp(): void {
-    printFlagsHelp(this.name, this.description, this.flagDefinitions);
+    // eslint-disable-next-line no-console
+    console.log(helpFlags(this.flagDefinitions));
   }
 
   /**
