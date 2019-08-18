@@ -39,7 +39,10 @@ export default abstract class FlagTypeBase<ReturnType, Options extends IFlagType
     this.shortName = shortName;
     this.description = description;
 
-    this.options = options;
+    this.options = {
+      optional: false,
+      ...options,
+    };
   }
 
   /**
@@ -54,6 +57,13 @@ export default abstract class FlagTypeBase<ReturnType, Options extends IFlagType
    */
   protected errorInvalid(): Error {
     return new Error(`Flag (--${this.longName}) value is invalid.`);
+  }
+
+  /**
+   * Get the flag's options.
+   */
+  public getOptions(): Options {
+    return this.options;
   }
 
   /**
