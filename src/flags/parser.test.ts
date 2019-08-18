@@ -4,8 +4,10 @@
 
 import parse from "@/flags/parser";
 
-import FlagTypeString from "@/flags/types/string";
+import FlagTypeBoolean from "@/flags/types/boolean";
 import FlagTypeEnum from "@/flags/types/enum";
+import FlagTypeNumber from "@/flags/types/number";
+import FlagTypeString from "@/flags/types/string";
 
 describe("flags/parser", (): void => {
   it("parses a basic valid flag map", (): void => {
@@ -30,20 +32,24 @@ describe("flags/parser", (): void => {
     expect(parsed.otherFlag).toBe(undefined);
   });
 
-  it("parses a flag map with enums", (): void => {
-    const flagMap = { greeting: "hello", name: "Name" };
+  it("parses a flag map with all available types", (): void => {
+    const flagMap = { greeting: "hello", name: "Name", hasShirt: "1", age: "34" };
     const flagDefinitions = [
       new FlagTypeEnum("greeting", "g", "Greeting.", { choices: ["hello", "hi"] }),
       new FlagTypeString("name", "n", "Name.", {}),
+      new FlagTypeBoolean("hasShirt", "h", "Shirt.", {}),
+      new FlagTypeNumber("age", "a", "Age.", {}),
     ];
 
     const parsed = parse(flagMap, flagDefinitions);
 
     expect(parsed.greeting).toBe("hello");
     expect(parsed.name).toBe("Name");
+    expect(parsed.hasShirt).toBe(true);
+    expect(parsed.age).toBe(34);
   });
 
-  it("throws if an enum is invalid", (): void => {
+  it("throws if a flag has an invalid value", (): void => {
     const flagMap = { greeting: "Yo", name: "Name" };
     const flagDefinitions = [
       new FlagTypeEnum("greeting", "g", "Greeting.", { choices: ["hello", "hi"] }),
