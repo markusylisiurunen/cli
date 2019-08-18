@@ -11,7 +11,7 @@ import { terminal } from "terminal-kit";
 
 import UIViewBase from "@/ui/views/base";
 
-import UIViewLog, { IUIViewLogProps, IUIViewLogOptions } from "@/ui/views/log";
+import UIViewLog from "@/ui/views/log";
 import UIViewTask, { IUIViewTaskProps, IUIViewTaskOptions } from "@/ui/views/task";
 
 /**
@@ -125,9 +125,13 @@ class UIController {
    * Print a free-form log message to stdout.
    * @param text The text to print.
    */
-  public log(text: string): UIViewLog {
+  public log(text: any): UIViewLog {
     const rootView = this.createRootView();
-    const logView = new UIViewLog(rootView, { text }, {});
+    const logView = new UIViewLog(
+      rootView,
+      { text: typeof text === "string" ? text : String(text) },
+      {},
+    );
 
     rootView.render();
     this.views.push(rootView);
@@ -140,9 +144,14 @@ class UIController {
    * @param props     Props for the task view.
    * @param [options] Options for the task view.
    */
-  public task(props: IUIViewTaskProps, options: Partial<IUIViewTaskOptions> = {}): UIViewTask {
+  public task(
+    props: IUIViewTaskProps | string,
+    options: Partial<IUIViewTaskOptions> = {},
+  ): UIViewTask {
     const rootView = this.createRootView();
-    const taskView = new UIViewTask(rootView, props, options);
+
+    const taskViewProps = typeof props === "string" ? { text: props } : props;
+    const taskView = new UIViewTask(rootView, taskViewProps, options);
 
     rootView.render();
     this.views.push(rootView);
