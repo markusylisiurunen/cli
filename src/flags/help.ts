@@ -1,30 +1,20 @@
 /**
- * @overview Module for printing command messages.
+ * @overview Produce the flag help message.
  */
 
+import FlagTypeBoolean from "@/flags/types/boolean";
+import FlagTypeEnum from "@/flags/types/enum";
+import FlagTypeNumber from "@/flags/types/number";
 import FlagTypeString from "@/flags/types/string";
 
-export default function printHelp(
-  commandName: string,
-  commandDescription: string,
-  flagDefinitions: FlagTypeString[],
-): void {
-  const lines = [];
-
-  // Usage information
-  lines.push(`Usage: ${commandName} [OPTIONS]`);
-  lines.push("");
-
-  // Command description
-  lines.push(commandDescription);
-  lines.push("");
-
-  // Options
-  lines.push("Options:");
-
+export default function help(
+  flagDefinitions: (FlagTypeBoolean | FlagTypeEnum | FlagTypeNumber | FlagTypeString)[],
+): string {
   const options: string[][] = [];
 
   const sortedFlagDefinitions = flagDefinitions.sort((a, b): number => {
+    if (a.getOptions().optional === true && b.getOptions().optional === false) return 1;
+    if (a.getOptions().optional === false && b.getOptions().optional === true) return -1;
     if (a.longName < b.longName) return -1;
     if (b.longName < a.longName) return 1;
     return 0;
@@ -43,7 +33,10 @@ export default function printHelp(
       option.push(`-${flagDefinition.shortName}, --${flagDefinition.longName}`);
     }
 
-    option[0] += ` <${flagDefinition.argumentType}>`;
+    option[0] +=
+      flagDefinition.getOptions().optional === true
+        ? ` [${flagDefinition.argumentType}]`
+        : ` <${flagDefinition.argumentType}>`;
 
     option.push(flagDefinition.description);
 
@@ -55,16 +48,13 @@ export default function printHelp(
     "",
   );
 
-  lines.push(
-    ...options.map(
+  return options
+    .map(
       (option): string =>
         `${option[0]}  ${option[1].padStart(
           longestName.length - option[0].length + option[1].length,
           " ",
         )}`,
-    ),
-  );
-
-  // eslint-disable-next-line no-console
-  console.log(["", ...lines, ""].join("\n"));
+    )
+    .join("\n");
 }
