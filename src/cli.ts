@@ -8,73 +8,79 @@ import Command from "@/command";
 
 import parseFlags from "@/flags/parser";
 
-/**
- * The main CLI runtime class.
- * @class
- */
 class Cli {
+  // A set of registered commands
   private commands: { [key: string]: Command } = {};
 
+  // INTERNAL METHODS
+  // ================
+
   /**
-   * Print command help view.
+   * Print help for all commands.
    */
-  private printCommandsHelp(): void {
-    const lines: string[] = [];
-
+  private helpCommands(): void {
     if (Object.keys(this.commands).length === 0) {
-      lines.push("No commands available.");
-    } else {
-      lines.push("Run 'COMMAND --help' for more detailed help.");
-      lines.push("");
+      process.stdout.write("\n");
+      process.stdout.write("No commands available.");
+      process.stdout.write("\n");
 
-      lines.push("Commands:");
+      process.exit(0);
+    }
 
-      // Create a commands list
-      let commandLines = [];
+    process.stdout.write("\n");
+    process.stdout.write("Run 'COMMAND --help' for more detailed help.");
+    process.stdout.write("\n\n");
 
-      for (const [name, command] of Object.entries(this.commands)) {
-        commandLines.push([name, command.description]);
-      }
+    process.stdout.write("Commands:");
+    process.stdout.write("\n");
 
-      // Pad each description properly
-      const longestCommandName = commandLines.reduce(
-        (prev, [name]): string => (prev.length < name.length ? name : prev),
-        "",
+    const sortedCommandNames = Object.keys(this.commands).sort();
+    const commands = [];
+
+    for (const commandName of sortedCommandNames) {
+      commands.push([commandName, this.commands[commandName].description]);
+    }
+
+    const commandNameLongest = commands.reduce(
+      (prev, [name]): string => (prev.length < name.length ? name : prev),
+      "",
+    );
+
+    for (const command of commands) {
+      process.stdout.write(
+        `  ${command[0]}  ${command[1].padStart(
+          commandNameLongest.length - command[0].length + command[1].length,
+          " ",
+        )}`,
       );
 
-      for (const commandLine of commandLines) {
-        lines.push(
-          `  ${commandLine[0]}  ${commandLine[1].padStart(
-            longestCommandName.length - commandLine[0].length + commandLine[1].length,
-            " ",
-          )}`,
-        );
-      }
+      process.stdout.write("\n");
     }
 
-    // Print the final output
-    // eslint-disable-next-line no-console
-    console.log(["", ...lines, ""].join("\n"));
+    process.exit(0);
   }
 
   /**
-   * Print options help view for a command.
+   * Print help for a single command.
    * @param name Name of the command.
    */
-  private printOptionsHelp(name: string): void {
+  private helpCommand(name: string): void {
     if (this.commands[name] === undefined) {
-      throw new Error(`Tried to print options help view for an unknown command '${name}'.`);
+      throw new Error(`Tried to print help for an unknown command '${name}'.`);
     }
 
-    this.commands[name].printHelp();
+    this.commands[name].help();
   }
+
+  // PUBLIC API
+  // ==========
 
   /**
    * Register a new command.
    * @param name    Name of the command to register.
    * @param command An instance of Command class.
    */
-  public registerCommand(name: string, command: Command): void {
+  public register(name: string, command: Command): void {
     if (this.commands[name] !== undefined) {
       throw new Error(`Tried to register command '${name}' twice.`);
     }
@@ -83,43 +89,48 @@ class Cli {
   }
 
   /**
-   * Entrypoint for the framework runtime.
+   * Entrypoint method for the CLI to start running a command.
    */
   public async run(): Promise<void> {
-    const availableFlags = Object.entries(this.commands)
+    // Parse the flags to strings with minimist
+
+    const flagsToParseAsString = Object.entries(this.commands)
       .map(([_name, command]): string[] => {
         return command.flagDefinitions
-          .map((def): string[] => (def.shortName ? [def.longName, def.shortName] : [def.longName]))
+          .map((definition): string[] =>
+            definition.shortName
+              ? [definition.longName, definition.shortName]
+              : [definition.longName],
+          )
           .flat();
       })
       .flat();
 
-    const flags = minimist(process.argv.slice(2), { string: availableFlags });
+    const flags = minimist(process.argv.slice(2), { string: flagsToParseAsString });
 
-    // Print command help if needed
-    if (flags._.length === 0 || this.commands[flags._[0]] === undefined) {
-      this.printCommandsHelp();
-      return;
+    // Print command list help message
+
+    if (flags._.length === 0 || !this.commands[flags._[0]]) {
+      this.helpCommands();
     }
 
-    const commandName = flags._[0];
+    // Print command's help message
 
-    // Print command options help if requested
-    if (flags.help) {
-      this.printOptionsHelp(commandName);
-      return;
+    const [command] = flags._;
+
+    if (flags.help === true || flags.h === true) {
+      this.helpCommand(command);
     }
 
-    // Pass control to command if requested in interactive mode
-    if (flags.interactive) {
-      await this.commands[commandName].runInteractive();
-      return;
+    // Pass control to the command instance
+
+    if (flags.interactive === true || flags.i === true) {
+      return await this.commands[command].runInteractive();
     }
 
-    // Try to parse required flags
-    const parsedFlags = parseFlags(flags, this.commands[commandName].flagDefinitions);
+    const parsedFlags = parseFlags(flags, this.commands[command].flagDefinitions);
 
-    await this.commands[commandName].runStatic(parsedFlags);
+    return await this.commands[command].runStatic(parsedFlags);
   }
 }
 
@@ -144,7 +155,7 @@ export default {
    * @param command Instance of Command class.
    */
   register(command: Command): void {
-    getCli().registerCommand(command.name, command);
+    getCli().register(command.name, command);
   },
 
   /**
