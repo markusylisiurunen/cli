@@ -15,7 +15,9 @@ class HelloCommand extends Command {
     this.flags.boolean("flag-four", null, "Description for flag four.", { optional: true }),
   ];
 
-  public async runInteractive(): Promise<void> {}
+  public async runInteractive(): Promise<void> {
+    this.runStatic(await this.populateFlags());
+  }
 
   public async runStatic(flags: { [key: string]: any }): Promise<void> {
     const task = this.ui.task("Hello world");
