@@ -14,6 +14,23 @@ import UIViewBase from "@/ui/views/base";
 import UIViewLog from "@/ui/views/log";
 import UIViewTask, { IUIViewTaskProps, IUIViewTaskOptions } from "@/ui/views/task";
 
+import UIQuestionViewBoolean, {
+  IUIQuestionViewBooleanProps,
+  IUIQuestionViewBooleanOptions,
+} from "@/ui/views/question-boolean";
+import UIQuestionViewEnum, {
+  IUIQuestionViewEnumProps,
+  IUIQuestionViewEnumOptions,
+} from "@/ui/views/question-enum";
+import UIQuestionViewNumber, {
+  IUIQuestionViewNumberProps,
+  IUIQuestionViewNumberOptions,
+} from "@/ui/views/question-number";
+import UIQuestionViewString, {
+  IUIQuestionViewStringProps,
+  IUIQuestionViewStringOptions,
+} from "@/ui/views/question-string";
+
 /**
  * Class for the root UI view.
  */
@@ -76,6 +93,15 @@ class UIViewRoot extends UIViewBase<IUIViewRootState> {
   }
 
   /**
+   * Initialise the child view.
+   */
+  public async initialise(): Promise<void> {
+    if (this.child !== null && this.child.shouldInitialise()) {
+      await this.child.initialise();
+    }
+  }
+
+  /**
    * Render the child view.
    */
   public render(): number {
@@ -119,6 +145,92 @@ class UIController {
         }
       }
     });
+  }
+
+  /**
+   * Add a new view to the list of views.
+   */
+  private async createView<T>(createChildView: (rootView: UIViewRoot) => T): Promise<T> {
+    const rootView = this.createRootView();
+    const childView = createChildView(rootView);
+
+    await rootView.initialise();
+    rootView.render();
+
+    this.views.push(rootView);
+
+    return childView;
+  }
+
+  /**
+   * Create a new boolean question view.
+   * @param props     Props for the boolean question view.
+   * @param [options] Options for the boolean question view.
+   */
+  public async askBoolean(
+    props: string | IUIQuestionViewBooleanProps,
+    options: Partial<IUIQuestionViewBooleanOptions> = {},
+  ): Promise<UIQuestionViewBoolean> {
+    return this.createView(
+      (rootView): UIQuestionViewBoolean =>
+        new UIQuestionViewBoolean(
+          rootView,
+          typeof props === "string" ? { question: props } : props,
+          options,
+        ),
+    );
+  }
+
+  /**
+   * Create a new enum question view.
+   * @param props     Props for the enum question view.
+   * @param [options] Options for the enum question view.
+   */
+  public async askEnum(
+    props: IUIQuestionViewEnumProps,
+    options: Partial<IUIQuestionViewEnumOptions> = {},
+  ): Promise<UIQuestionViewEnum> {
+    return this.createView(
+      (rootView): UIQuestionViewEnum => new UIQuestionViewEnum(rootView, props, options),
+    );
+  }
+
+  /**
+   * Create a new number question view.
+   * @param props     Props for the number question view.
+   * @param [options] Options for the number question view.
+   */
+  public async askNumber(
+    props: string | IUIQuestionViewNumberProps,
+    options: Partial<IUIQuestionViewNumberOptions> = {},
+  ): Promise<UIQuestionViewNumber> {
+    return this.createView(
+      (rootView): UIQuestionViewNumber =>
+        new UIQuestionViewNumber(
+          rootView,
+          typeof props === "string" ? { question: props } : props,
+          options,
+        ),
+    );
+  }
+
+  /**
+   * Create a new string question view.
+   * @param props     Props for the string question view.
+   * @param [options] Options for the string question view.
+   */
+  public async askString(
+    props: string | IUIQuestionViewStringProps,
+    options: Partial<IUIQuestionViewStringOptions> = {},
+  ): Promise<UIQuestionViewString> {
+    return this.createView(
+      (rootView): UIQuestionViewString =>
+        new UIQuestionViewString(
+          rootView,
+          typeof props === "string" ? { question: props } : props,
+          options,
+        ),
+    );
   }
 
   /**
