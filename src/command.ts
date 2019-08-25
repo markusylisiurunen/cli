@@ -53,9 +53,113 @@ export default abstract class Command {
   };
 
   protected ui = {
+    askBoolean: uiController.askBoolean.bind(uiController),
+    askEnum: uiController.askEnum.bind(uiController),
+    askNumber: uiController.askNumber.bind(uiController),
+    askString: uiController.askString.bind(uiController),
     log: uiController.log.bind(uiController),
     task: uiController.task.bind(uiController),
   };
+
+  // PROTECTED API
+  // =============
+
+  protected async populateFlags(): Promise<{ [key: string]: unknown }> {
+    const result: { [key: string]: unknown } = {};
+
+    this.ui.log("\nYou entered interactive mode. Please answer the following questions.\n");
+
+    const flagDefinitions = [...this.flagDefinitions];
+
+    while (flagDefinitions.length > 0) {
+      const [flag] = flagDefinitions.slice(0, 1);
+
+      // FlagTypeBoolean
+      if (flag instanceof FlagTypeBoolean) {
+        const question = await this.ui.askBoolean(
+          `(--${flag.longName}) ${flag.description} <${flag.argumentType}>`,
+        );
+
+        const rawValue = question.getValue();
+
+        try {
+          const parsedValue = flag.parse(rawValue !== null ? rawValue.toString() : undefined);
+          result[flag.longName] = parsedValue;
+        } catch (error) {
+          this.ui.log("Invalid value. Please try again.");
+          continue;
+        }
+      }
+
+      // FlagTypeEnum
+      if (flag instanceof FlagTypeEnum) {
+        const question = await this.ui.askEnum({
+          question: `(--${flag.longName}) ${flag.description} <${flag.argumentType}>`,
+          choices: (flag as FlagTypeEnum).getOptions().choices,
+        });
+
+        const rawValue = question.getValue();
+
+        try {
+          const parsedValue = flag.parse(rawValue !== null ? rawValue : undefined);
+          result[flag.longName] = parsedValue;
+        } catch (error) {
+          this.ui.log("Invalid value. Please try again.");
+          continue;
+        }
+      }
+
+      // FlagTypeNumber
+      if (flag instanceof FlagTypeNumber) {
+        const question = await this.ui.askString(
+          `(--${flag.longName}) ${flag.description} <${flag.argumentType}>`,
+        );
+
+        const rawValue = question.getValue();
+
+        try {
+          const parsedValue = flag.parse(rawValue !== null ? rawValue : undefined);
+          result[flag.longName] = parsedValue;
+        } catch (error) {
+          this.ui.log("Invalid value. Please try again.");
+          continue;
+        }
+      }
+
+      // FlagTypeString
+      if (flag instanceof FlagTypeString) {
+        const question = await this.ui.askString(
+          `(--${flag.longName}) ${flag.description} <${flag.argumentType}>`,
+        );
+
+        let rawValue: string | null | undefined = question.getValue();
+        rawValue = rawValue === "" ? undefined : rawValue;
+
+        try {
+          const parsedValue = flag.parse(rawValue !== null ? rawValue : undefined);
+          result[flag.longName] = parsedValue;
+        } catch (error) {
+          this.ui.log("Invalid value. Please try again.");
+          continue;
+        }
+      }
+
+      flagDefinitions.shift();
+    }
+
+    this.ui.log(
+      "\nFlags populated. If you want to run the command with the same configuration again, you can do it with the following flags.\n",
+    );
+
+    this.ui.log(
+      `${Object.entries(result).reduce(
+        (acc, [name, value]): string => `${acc} --${name} '${(value as any).toString()}'`,
+        "",
+      )}\n`,
+    );
+
+    return result;
+  }
 
   // PUBLIC API
   // ==========
