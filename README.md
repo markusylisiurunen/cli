@@ -18,7 +18,9 @@ Work in progress.
 ## Table of contents
 
 1. [Installation](#installation)
-2. [Features](#features)
+2. [Usage](#usage)
+   1. [Example](#example)
+3. [Features](#features)
    1. [UI](#ui)
       1. [log](#log)
       2. [task](#task)
@@ -31,7 +33,6 @@ Work in progress.
          1. [waitForAnswer](#waitforanswer)
       6. [askString](#askstring)
          1. [waitForAnswer](#waitforanswer)
-3. [Usage](#usage)
 4. [License](#license)
 
 ## Installation
@@ -46,6 +47,61 @@ To install it as a project's dependency, run the following command.
 
 ```sh
 npm add @markusylisiurunen/cli
+```
+
+## Usage
+
+Work in progress.
+
+### Example
+
+The example below will give you the following features out of the box.
+
+- Listing of all available commands via top level `--help`, `-h` or `help`.
+- Command help documentation via `--help`, `-h` or `help`.
+- Flag parsing and validation, and helpful error messages.
+- Automatic interactive population of the flags.
+- Interactive UI views via `this.ui.<view_name>`.
+
+```ts
+import cli from "@markusylisiurunen/cli";
+
+interface ISayHelloCommandFlags {
+  name: string;
+  age: number;
+}
+
+class SayHelloCommand extends cli.Command {
+  public name = "say-hello";
+  public description = "Say hello to a human being.";
+
+  public flagDefinitions = [
+    this.flags.string("name", "n", "Human's name.", {}),
+    this.flags.number("age", "a", "Human's age.", {}),
+  ];
+
+  private async fetchGreeting(): Promise<string> {
+    return new Promise((resolve) => setTimeout(() => resolve("Hello"), 2000));
+  }
+
+  public async run(flags: ISayHelloCommandFlags): Promise<void> {
+    const fetchGreetingTask = this.ui.task("Retrieving the greeting.");
+
+    try {
+      const greeting = await this.fetchGreeting();
+      fetchGreetingTask.setStatus("completed");
+
+      this.ui.log(`${greeting}, ${flags.name}. You are ${flags.age} years old.`);
+    } catch (error) {
+      fetchGreetingTask.setStatus("failed");
+      process.exit(1);
+    }
+  }
+}
+
+cli.register(new SayHelloCommand());
+
+cli.run({ name: "test" });
 ```
 
 ## Features
@@ -209,10 +265,6 @@ function waitForAnswer(): Promise<string> {}
 
 Waits for the user's answer to the question. It will either return a string or throw if the user
 does not answer with a valid answer.
-
-## Usage
-
-Work in progress.
 
 ## License
 
