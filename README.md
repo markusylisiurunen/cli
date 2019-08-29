@@ -25,6 +25,12 @@ Work in progress.
          1. [setStatus](#setstatus)
       3. [askBoolean](#askboolean)
          1. [waitForAnswer](#waitforanswer)
+      4. [askEnum](#askenum)
+         1. [waitForAnswer](#waitforanswer)
+      5. [askNumber](#asknumber)
+         1. [waitForAnswer](#waitforanswer)
+      6. [askString](#askstring)
+         1. [waitForAnswer](#waitforanswer)
 3. [Usage](#usage)
 4. [License](#license)
 
@@ -124,6 +130,85 @@ function waitForAnswer(): Promise<boolean> {}
 
 Waits for the user's answer to the question. It will either return the boolean value or throw if the
 user does not answer with a valid answer.
+
+#### askEnum
+
+```ts
+interface IUIQuestionViewEnumProps {
+  question: string;
+  choices: string[];
+}
+
+interface IUIQuestionViewEnumOptions {}
+
+function askEnum(
+  props: IUIQuestionViewEnumProps,
+  options: Partial<IUIQuestionViewEnumOptions> = {},
+): UIQuestionViewEnum {}
+```
+
+Creates an interactive view for asking questions of which the answer should be one of enum's values.
+
+##### waitForAnswer
+
+```ts
+function waitForAnswer(): Promise<string> {}
+```
+
+Waits for the user's answer to the question. It will either return the enum value or throw if the
+user does not answer with a valid answer.
+
+#### askNumber
+
+```ts
+interface IUIQuestionViewNumberProps {
+  question: string;
+}
+
+interface IUIQuestionViewNumberOptions {}
+
+function askNumber(
+  props: IUIQuestionViewNumberProps | string,
+  options: Partial<IUIQuestionViewNumberOptions> = {},
+): UIQuestionViewNumber {}
+```
+
+Creates an interactive view for asking questions of which the answer should be a number.
+
+##### waitForAnswer
+
+```ts
+function waitForAnswer(): Promise<number> {}
+```
+
+Waits for the user's answer to the question. It will either return a number or throw if the user
+does not answer with a valid answer.
+
+#### askString
+
+```ts
+interface IUIQuestionViewStringProps {
+  question: string;
+}
+
+interface IUIQuestionViewStringOptions {}
+
+function askString(
+  props: IUIQuestionViewStringProps | string,
+  options: Partial<IUIQuestionViewStringOptions> = {},
+): UIQuestionViewString {}
+```
+
+Creates an interactive view for asking questions of which the answer should be a free-form string.
+
+##### waitForAnswer
+
+```ts
+function waitForAnswer(): Promise<string> {}
+```
+
+Waits for the user's answer to the question. It will either return a string or throw if the user
+does not answer with a valid answer.
 
 ## Usage
 
