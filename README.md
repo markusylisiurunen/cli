@@ -7,6 +7,9 @@
 A framework for building CLIs with Node.js. This project takes a minimalistic approach and tries to
 enable building CLI applications with minimal effort and great DX/UX.
 
+> NOTE! This project is currently work in progress and most likely will not work at all. It is not
+> recommended to use in any real project at the moment.
+
 ## The problem
 
 Work in progress.
@@ -20,6 +23,7 @@ Work in progress.
 1. [Installation](#installation)
 2. [Usage](#usage)
    1. [Example](#example)
+   2. [Custom views](#custom-views)
 3. [Features](#features)
    1. [UI](#ui)
       1. [log](#log)
@@ -102,6 +106,47 @@ class SayHelloCommand extends cli.Command {
 cli.register(new SayHelloCommand());
 
 cli.run({ name: "test" });
+```
+
+### Custom views
+
+If you want to create your own custom views, you can extend the base view class. Below is an example
+of a view which logs whatever you give it with caps-lock on.
+
+```ts
+import cli from "@markusylisiurunen/cli";
+
+export interface IUIViewCapsLockProps {
+  text: string;
+}
+
+export interface IUIViewCapsLockOptions {}
+
+interface IUIViewCapsLockState {
+  text: string;
+}
+
+class UIViewCapsLock extends cli.UIViewBase<IUIViewCapsLockState> {
+  public constructor(
+    parent: cli.UIViewBase | null,
+    props: IUIViewCapsLockProps,
+    _options: Partial<IUIViewCapsLockOptions>,
+  ) {
+    super(parent);
+    this.state = { text: props.text };
+  }
+
+  public render(): number {
+    cli.stdout.write(`${this.state.text.toUpperCase()}\n`);
+    return this.state.text.split("\n").length;
+  }
+}
+```
+
+To use this class, you can do the following inside a `Command` class.
+
+```ts
+this.ui.customView((p) => new UIViewCapsLock(p, { text: "Hello, world!" }, {}));
 ```
 
 ## Features
